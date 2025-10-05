@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
+//#include "..\Number\Number.h"
 #include "Number.h"
+//#include "..\Vector\Vector.h"
 #include "Vector.h"
 
 using std::cout;
