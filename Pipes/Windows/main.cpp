@@ -33,7 +33,11 @@ void ProcessM(HANDLE in, HANDLE out) {
     std::istringstream iss(ReadPipe(in));
     std::ostringstream oss;
     int x;
-    while (iss >> x) oss << (x * 7) << " ";
+
+    while (iss >> x) {
+        oss << (x * 7) << " ";
+    }
+
     WritePipe(out, oss.str());
     CloseHandle(in);
     CloseHandle(out);
@@ -61,6 +65,7 @@ void ProcessP(HANDLE in, HANDLE out) {
     while (iss >> x) {
         oss << (x * x * x) << " ";
     }
+
     WritePipe(out, oss.str());
     CloseHandle(in);
     CloseHandle(out);
@@ -69,9 +74,11 @@ void ProcessP(HANDLE in, HANDLE out) {
 void ProcessS(HANDLE in, HANDLE out) {
     std::istringstream iss(ReadPipe(in));
     int sum = 0, x;
+
     while (iss >> x) {
         sum += x;
     }
+
     WritePipe(out, std::to_string(sum));
     CloseHandle(in);
     CloseHandle(out);
@@ -105,8 +112,6 @@ int main() {
     std::string result = ReadPipe(rOut);
     std::cout << "Result: " << result << std::endl;
 
-    int expected = 0;
-
     std::stringstream ss(inputStr);
     int number;
     std::vector<int> numbers;
@@ -114,13 +119,29 @@ int main() {
     while (ss >> number) {
         numbers.push_back(number);
     }
+
+    long long expected = 0;
     for (int x : numbers) {
-        expected += pow((x * 7 + N), 3);
+        long long val = x * 7 + N;
+        expected += val * val * val;
     }
     std::cout << "Expected: " << expected << std::endl;
-    std::cout << (std::to_string(expected) == result ? "SUCCESS" : "FAIL") << std::endl;
+
+    if (!result.empty()) {
+        try {
+            long long result_num = std::stoll(result);
+            std::cout << (result_num == expected ? "SUCCESS" : "FAIL") << std::endl;
+        }
+        catch (...) {
+            std::cout << "FAIL: Invalid result format" << std::endl;
+        }
+    }
+    else {
+        std::cout << "FAIL: No result" << std::endl;
+    }
 
     CloseHandle(rOut);
-    std::cout << "\nPress Enter to exit..."; std::cin.get();
+    std::cout << "\nPress Enter to exit...";
+    std::cin.get();
     return 0;
 }
