@@ -33,19 +33,19 @@ public:
 
     std::pair<T, bool> Recv() {
         std::unique_lock<std::mutex> lock(mutex_);
-
+    
         recv_cv_.wait(lock, [this]() {
             return closed_ || !queue_.empty();
             });
-
-        if (!queue_.empty()) {
-            T value = std::move(queue_.front());
-            queue_.pop();
-            send_cv_.notify_one();
-            return { std::move(value), true };
+    
+        if (closed_ && queue_.empty()) {
+            return { T(), false };
         }
-
-        return { T(), false };
+    
+        T value = std::move(queue_.front());
+        queue_.pop();
+        send_cv_.notify_one();
+        return { std::move(value), true };
     }
 
     void Close() {
@@ -63,5 +63,6 @@ private:
     std::condition_variable send_cv_;
     std::condition_variable recv_cv_;
 };
+
 
 #endif // BUFFERED_CHANNEL_H_
