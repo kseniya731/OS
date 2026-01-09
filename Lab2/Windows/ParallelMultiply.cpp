@@ -24,28 +24,33 @@ void parallelMultiplyThread(const Matrix& A, const Matrix& B, Matrix& C, int blo
 }
 
 void computeBlock(const Matrix& A, const Matrix& B, Matrix& C,
-	int block_i, int block_j, int block_size,
-	int matrix_size, std::mutex& cout_mutex) {
-	int start_i = block_i * block_size;
-	int end_i = std::min(start_i + block_size, matrix_size);
-	int start_j = block_j * block_size;
-	int end_j = std::min(start_j + block_size, matrix_size);
+    int block_i, int block_j, int block_size,
+    int matrix_size, std::mutex& cout_mutex) {
+    int start_i = block_i * block_size;
+    int end_i = (start_i + block_size < matrix_size) ? start_i + block_size : matrix_size;
+    int start_j = block_j * block_size;
+    int end_j = (start_j + block_size < matrix_size) ? start_j + block_size : matrix_size;
 
-	{
-		std::lock_guard<std::mutex> lock(cout_mutex);
-	}
+    std::vector<std::vector<int>> local_block(end_i - start_i, std::vector<int>(end_j - start_j, 0));
 
-	for (int k_block = 0; k_block < calculateBlocksNumber(matrix_size, block_size); k_block++) {
-		int k_start = k_block * block_size;
-		int k_end = std::min(k_start + block_size, matrix_size);
-		for (int i = start_i; i < end_i; i++) {
-			for (int j = start_j; j < end_j; j++) {
-				int sum = 0;
-				for (int k = k_start; k < k_end; k++) {
-					sum += A[i][k] * B[k][j];
-				}
-				C[i][j] += sum;
-			}
-		}
-	}
+    for (int k_block = 0; k_block < calculateBlocksNumber(matrix_size, block_size); k_block++) {
+        int k_start = k_block * block_size;
+        int k_end = (k_start + block_size < matrix_size) ? k_start + block_size : matrix_size;
+        for (int i = start_i; i < end_i; i++) {
+            for (int j = start_j; j < end_j; j++) {
+                int sum = 0;
+                for (int k = k_start; k < k_end; k++) {
+                    sum += A[i][k] * B[k][j];
+                }
+                local_block[i - start_i][j - start_j] += sum;
+            }
+        }
+    }
+
+    std::lock_guard<std::mutex> lock(cout_mutex);
+    for (int i = start_i; i < end_i; i++) {
+        for (int j = start_j; j < end_j; j++) {
+            C[i][j] = local_block[i - start_i][j - start_j];
+        }
+    }
 }

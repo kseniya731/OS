@@ -60,14 +60,17 @@ void countSpeed() {
 
 		Matrix C1 = createMatrix(N), C2 = createMatrix(N), C3 = createMatrix(N);
 
+		clearMatrix(C1);
 		auto start = std::chrono::high_resolution_clock::now();
 		sequenceMultiply(A, B, C1);
 		auto seq_time = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
 
+		clearMatrix(C2);
 		start = std::chrono::high_resolution_clock::now();
 		parallelMultiplyThread(A, B, C2, block_size);
 		auto thread_time = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();
 
+		clearMatrix(C3);
 		start = std::chrono::high_resolution_clock::now();
 		parallelMultiplyWindows(A, B, C3, block_size);
 		auto windows_time = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - start).count();

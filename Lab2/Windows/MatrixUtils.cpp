@@ -53,3 +53,9 @@ bool areMatricesEqual(const Matrix& A, const Matrix& B) {
 int calculateBlocksNumber(int matrix_size, int block_size) {
 	return (matrix_size + block_size - 1) / block_size;
 }
+
+void clearMatrix(Matrix& matrix) {
+	for (auto& row : matrix) {
+		std::fill(row.begin(), row.end(), 0);
+	}
+}
